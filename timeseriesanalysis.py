@@ -53,4 +53,4 @@ def lineplot():
     toolbar.update()
     root.mainloop()
     
-AgeWiseBox()
+lineplot()
