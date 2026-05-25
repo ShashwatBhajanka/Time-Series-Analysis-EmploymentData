@@ -1,16 +1,19 @@
 import numpy as np
 import pandas as pd
 import matplotlib
+import data_profiling
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sb
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-# pyrefly: ignore [missing-import]
-from ydata_profiling import ProfileReport
+from data_profiling import ProfileReport
+import statsmodels.api as sm
 
 df = pd.read_csv("employment.csv")
+df['date'] = pd.to_datetime(df['date'])
+
 
 def AgeWiseBox():
     plt.figure(figsize = (15,8))
@@ -52,5 +55,15 @@ def lineplot():
     toolbar = NavigationToolbar2Tk(plot_canvas, scrollable_frame)
     toolbar.update()
     root.mainloop()
-    
-lineplot()
+
+def hiringageovertime():   
+    df['year'] = df['date'].dt.year
+    df_year = df.drop(columns=['date']).groupby('year').mean(numeric_only=True)
+
+    df_year.plot(figsize=(15, 8))
+    plt.title('Unemployment Rate over the Years')
+    plt.xlabel('Year')
+    plt.ylabel('Unemployment Rate (%)')
+    plt.legend(loc='upper right', fontsize=8)
+    plt.show()
+
