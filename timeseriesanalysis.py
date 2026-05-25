@@ -11,8 +11,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from data_profiling import ProfileReport
 import statsmodels.api as sm
 
-df = pd.read_csv("employment.csv")
-df['date'] = pd.to_datetime(df['date'])
 
 
 def AgeWiseBox():
@@ -56,6 +54,9 @@ def lineplot():
     toolbar.update()
     root.mainloop()
 
+df = pd.read_csv("employment.csv")
+df['date'] = pd.to_datetime(df['date'])
+
 def hiringageovertime():   
     df['year'] = df['date'].dt.year
     df_year = df.drop(columns=['date']).groupby('year').mean(numeric_only=True)
@@ -67,3 +68,5 @@ def hiringageovertime():
     plt.legend(loc='upper right', fontsize=8)
     plt.show()
 
+jobs_decomp = {}
+jobs_names = df.columns
