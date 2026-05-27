@@ -68,5 +68,46 @@ def hiringageovertime():
     plt.legend(loc='upper right', fontsize=8)
     plt.show()
 
-jobs_decomp = {}
-jobs_names = df.columns
+def seasonal_decompose_all():
+    df_idx = df.set_index('date').asfreq('MS')
+    decomp_results = {}
+    for col in df_idx.columns:
+        series = df_idx[col].dropna()
+        decomposition = sm.tsa.seasonal_decompose(series, model='additive', period=12)
+        decomp_results[col] = decomposition
+    return decomp_results
+
+unemp_decomp = seasonal_decompose_all()
+
+def age_group_trends():
+    age_cols = [c for c in df.columns if c not in ('date', 'overall_rate')]
+    df_melted = df.melt(id_vars=['date'], value_vars=age_cols,
+                        var_name='Age Group', value_name='Unemployment Rate')
+    plt.figure(figsize=(14, 7))
+    sb.lineplot(data=df_melted, x='date', y='Unemployment Rate',
+                hue='Age Group', linewidth=0.8)
+    plt.title('Unemployment Rate Trends by Age Group (1948–2024)')
+    plt.xlabel('Year')
+    plt.ylabel('Unemployment Rate (%)')
+    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize=7)
+    plt.tight_layout()
+    plt.show()
+
+def plot_seasonal_decomposition():
+    cols = list(unemp_decomp.keys())
+    ncols = 1
+    nrows = len(cols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(14, 2.5 * nrows), sharex=True, sharey=False, squeeze=False)
+    axes = axes.flatten()
+    for i, col in enumerate(cols):
+        decomp = unemp_decomp[col]
+        axes[i].plot(decomp.seasonal)
+        axes[i].set_ylabel(col, fontsize=8)
+        axes[i].tick_params(axis='x', labelsize=7)
+        axes[i].tick_params(axis='y', labelsize=6)
+    axes[-1].set_xlabel('Date')
+    plt.title("seasonality of each age group")
+    fig.subplots_adjust(hspace=0.4)
+    plt.show()
+
+plot_seasonal_decomposition()
