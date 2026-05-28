@@ -1,3 +1,4 @@
+from timeseriesanalysis import age_cols
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -93,33 +94,30 @@ def age_group_trends():
     plt.tight_layout()
     plt.show()
 
-def plot_seasonality_heatmap():
-    month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    seasonal_matrix = []
-    for col in unemp_decomp:
+def plot_seasonality():
+    age_groups = list(unemp_decomp.keys())
+    n = len(age_groups)
+    fig, axes = plt.subplots(n, 1, figsize=(12, 3*n), sharex=True)
+    for ax, col in zip(axes, age_groups):
         seasonal = unemp_decomp[col].seasonal
-        month_avg = seasonal.groupby(seasonal.index.month).mean()
-        seasonal_matrix.append(month_avg.values)
-    season_df = pd.DataFrame(seasonal_matrix,
-                             index=list(unemp_decomp.keys()),
-                             columns=month_labels)
-    plt.figure(figsize=(12, 8))
-    sb.heatmap(season_df, cmap='RdBu_r', center=0, annot=True, fmt='.2f',
-               linewidths=0.5)
-    plt.title('Seasonality of Unemployment Rate by Age Group')
-    plt.xlabel('Month')
-    plt.ylabel('Age Group')
+        ax.plot(seasonal.index, seasonal.values)
+        ax.axhline(0, color='gray', linestyle='--', linewidth=0.5)
+        ax.set_ylabel(col, fontsize=8)
+        ax.tick_params(axis='y', labelsize=7)
+    axes[-1].set_xlabel('Date')
+    fig.suptitle('Seasonality of Unemployment Rate by Age Group', fontsize=14)
     plt.tight_layout()
     plt.show()
 
-plot_seasonality_heatmap()
-age_cols = [c for c in df.columns if c.startswith('age_')]
-plt.figure(figsize=(12, 10))
-sb.heatmap(df[age_cols].corr(), annot=True, fmt='.2f', cmap='RdBu_r', center=0,
+plot_seasonality()
+
+def plot_heatmap():
+    age_cols = [c for c in df.columns if c.startswith('age_')]
+    plt.figure(figsize=(12, 10))
+    sb.heatmap(df[age_cols].corr(), annot=True, fmt='.2f', cmap='RdBu_r', center=0,
            square=True, linewidths=0.5)
-plt.title('Correlation Between Age Group Unemployment Rates')
-plt.tight_layout()
-plt.show()
+    plt.title('Correlation Between Age Group Unemployment Rates')
+    plt.tight_layout()
+    plt.show()
 
 
