@@ -93,21 +93,33 @@ def age_group_trends():
     plt.tight_layout()
     plt.show()
 
-def plot_seasonal_decomposition():
-    cols = list(unemp_decomp.keys())
-    ncols = 1
-    nrows = len(cols)
-    fig, axes = plt.subplots(nrows, ncols, figsize=(14, 2.5 * nrows), sharex=True, sharey=False, squeeze=False)
-    axes = axes.flatten()
-    for i, col in enumerate(cols):
-        decomp = unemp_decomp[col]
-        axes[i].plot(decomp.seasonal)
-        axes[i].set_ylabel(col, fontsize=8)
-        axes[i].tick_params(axis='x', labelsize=7)
-        axes[i].tick_params(axis='y', labelsize=6)
-    axes[-1].set_xlabel('Date')
-    plt.title("seasonality of each age group")
-    fig.subplots_adjust(hspace=0.4)
+def plot_seasonality_heatmap():
+    month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    seasonal_matrix = []
+    for col in unemp_decomp:
+        seasonal = unemp_decomp[col].seasonal
+        month_avg = seasonal.groupby(seasonal.index.month).mean()
+        seasonal_matrix.append(month_avg.values)
+    season_df = pd.DataFrame(seasonal_matrix,
+                             index=list(unemp_decomp.keys()),
+                             columns=month_labels)
+    plt.figure(figsize=(12, 8))
+    sb.heatmap(season_df, cmap='RdBu_r', center=0, annot=True, fmt='.2f',
+               linewidths=0.5)
+    plt.title('Seasonality of Unemployment Rate by Age Group')
+    plt.xlabel('Month')
+    plt.ylabel('Age Group')
+    plt.tight_layout()
     plt.show()
 
-plot_seasonal_decomposition()
+plot_seasonality_heatmap()
+age_cols = [c for c in df.columns if c.startswith('age_')]
+plt.figure(figsize=(12, 10))
+sb.heatmap(df[age_cols].corr(), annot=True, fmt='.2f', cmap='RdBu_r', center=0,
+           square=True, linewidths=0.5)
+plt.title('Correlation Between Age Group Unemployment Rates')
+plt.tight_layout()
+plt.show()
+
+
