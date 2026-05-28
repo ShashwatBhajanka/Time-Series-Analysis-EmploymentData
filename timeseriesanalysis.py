@@ -187,8 +187,6 @@ def DecadeAverages():
     plt.close()
 
 
-
-# ── Module-level computations for KEY FINDINGS ─────────────────────────────────
 pre_covid = df[df.index < "2020-01-01"]
 annual = df[["overall_rate", "age_16_19_rate"]].resample("YE").mean()
 annual.index = annual.index.year
