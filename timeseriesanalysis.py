@@ -186,19 +186,75 @@ def DecadeAverages():
     plt.savefig("figures/7_decades.png", dpi=150, bbox_inches="tight")
     plt.close()
 
+def recessionEffects():
+    pre_covid = df[df.index < "2020-01-01"]
+    annual = df[["overall_rate", "age_16_19_rate"]].resample("YE").mean()
+    annual.index = annual.index.year
+    annual["ratio"] = annual["age_16_19_rate"] / annual["overall_rate"]
 
-pre_covid = df[df.index < "2020-01-01"]
-annual = df[["overall_rate", "age_16_19_rate"]].resample("YE").mean()
-annual.index = annual.index.year
-annual["ratio"] = annual["age_16_19_rate"] / annual["overall_rate"]
+    apr_2020 = df.loc["2020-04-01"]
+    rows = []
+    for col, name in age_groups.items():
+        mu, sigma = pre_covid[col].mean(), pre_covid[col].std()
+        z = (apr_2020[col] - mu) / sigma
+        rows.append({"Age Group": name, "Apr 2020 Rate": apr_2020[col], "Z-Score": round(z, 2)})
+    outlier_df = pd.DataFrame(rows).sort_values("Z-Score", ascending=False)
 
-apr_2020 = df.loc["2020-04-01"]
-rows = []
-for col, name in age_groups.items():
-    mu, sigma = pre_covid[col].mean(), pre_covid[col].std()
-    z = (apr_2020[col] - mu) / sigma
-    rows.append({"Age Group": name, "Apr 2020 Rate": apr_2020[col], "Z-Score": round(z, 2)})
-outlier_df = pd.DataFrame(rows).sort_values("Z-Score", ascending=False)
+
+    print("Plotting 8/8: Recession comparison chart...")
+    import matplotlib.cm as cm
+    
+    recession_names = {
+        "1948-11": "1948–49",
+        "1953-07": "1953–54",
+        "1957-08": "1957–58",
+        "1960-04": "1960–61",
+        "1969-12": "1969–70",
+        "1973-11": "1973–75",
+        "1980-01": "1980",
+        "1981-07": "1981–82",
+        "1990-07": "1990–91",
+        "2001-03": "2001",
+        "2007-12": "2007–09",
+        "2020-02": "2020 (COVID)",
+    }
+    
+    fig, ax = plt.subplots(figsize=(14, 7))
+    colors = cm.tab20(range(len(recession_names)))
+    
+    for (start_str, name), color in zip(recession_names.items(), colors):
+        start = pd.Timestamp(start_str)
+        window_start = start - pd.DateOffset(months=3)
+        window_end   = start + pd.DateOffset(months=24)
+        window = df.loc[window_start:window_end, "overall_rate"]
+        if len(window) < 6:
+            continue
+        baseline = df.loc[start:start + pd.DateOffset(months=1), "overall_rate"]
+        if baseline.empty:
+            continue
+        baseline_val = baseline.iloc[0]
+        months_rel = [(d - start).days / 30.4 for d in window.index]
+        change = window.values - baseline_val
+        ax.plot(months_rel, change, label=name, color=color, linewidth=1.6, marker="o",
+                markersize=2.5)
+    
+    ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
+    ax.axvline(0, color="gray", linewidth=0.8, linestyle=":")
+    ax.set_xlabel("Months from Recession Start", fontsize=11)
+    ax.set_ylabel("Change in Unemployment Rate (percentage points)", fontsize=11)
+    ax.set_title("How Each Recession Unfolded\n(Change in overall unemployment rate relative to recession start)",
+                fontsize=13, fontweight="bold")
+    ax.legend(fontsize=8, ncol=2, loc="upper left")
+    ax.annotate("← recession starts here", xy=(0, ax.get_ylim()[0]),
+                xytext=(0.5, ax.get_ylim()[0]), fontsize=8, color="gray")
+    plt.tight_layout()
+    plt.savefig("figures/8_recession_comparison.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print("Done! Saved to figures/8_recession_comparison.png")
+    return annual, outlier_df
+
+annual, outlier_df = recessionEffects()
+
 
 print("\n========== KEY FINDINGS ==========")
 print(f"Overall mean:  {df['overall_rate'].mean():.2f}%")
