@@ -4,4 +4,3 @@ env/
 __pycache__/
 *.pyc
 employment_profiling_report.html
-.DS_Store
