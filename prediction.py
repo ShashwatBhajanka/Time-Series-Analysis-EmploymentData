@@ -57,5 +57,10 @@ forecast = forecast_obj.predicted_mean
 ci = forecast_obj.conf_int(alpha=0.05)
 ci.columns = ["lower","upper"]
 
-print(ci)
+pre_covid_test = test.loc[:"2020-02-01"]
+pre_covid_pred = forecast.loc[:"2020-02-01"]
 
+mae = np.mean(np.abs(pre_covid_test.values - pre_covid_pred.values))
+rmse = np.sqrt(np.mean((pre_covid_test.values - pre_covid_pred.values)**2))
+
+print(f"mae = {mae} and rmse = {rmse}")
