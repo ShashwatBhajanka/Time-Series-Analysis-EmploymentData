@@ -18,11 +18,11 @@ plt.rcParams.update({
     "grid.linestyle": "--",
 })
 
-df = pd.read_csv("employment.csv", parse_dates = ["date"])
-df = df.sort_values("date")
+df = pd.read_csv("employment.csv", parse_dates=["date"])
+df = df.sort_values("date").set_index("date")
 df = df.asfreq("MS")
 
-series = df["overall_rate"]
+series = df["overall_rate"]   # ← add this line     
 
 #We will split the dataset into train and test
 # normal economical conditions will be 1948-2019 inclusive
@@ -50,4 +50,12 @@ print("Completed Model Fitting")
 print(f"\nModel summary stats:")
 print(f"  AIC:  {result.aic:.2f}  (lower = better fit)")
 print(f"  BIC:  {result.bic:.2f}  (lower = better fit)")
+
+#forecasting over covid timeframe
+forecast_obj = result.get_forecast(steps = len(test))
+forecast = forecast_obj.predicted_mean
+ci = forecast_obj.conf_int(alpha=0.05)
+ci.columns = ["lower","upper"]
+
+print(ci)
 
