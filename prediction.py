@@ -63,4 +63,6 @@ pre_covid_pred = forecast.loc[:"2020-02-01"]
 mae = np.mean(np.abs(pre_covid_test.values - pre_covid_pred.values))
 rmse = np.sqrt(np.mean((pre_covid_test.values - pre_covid_pred.values)**2))
 
-print(f"mae = {mae} and rmse = {rmse}")
+print(f"\nAccuracy on Jan–Feb 2020 (pre-COVID, fair evaluation):")
+print(f"  MAE:  {mae:.3f} pp  (average error in percentage points)")
+print(f"  RMSE: {rmse:.3f} pp")
